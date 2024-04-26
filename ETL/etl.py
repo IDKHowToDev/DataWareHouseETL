@@ -55,12 +55,12 @@ print("our fact table has been treatned")
 
 #pour cree nos table
 def create_table(CURSER, table_name, table_schema):
-    CURSER.execute("SET FOREIGN_KEY_CHECKS = 0")
+    
     sql = f"DROP TABLE IF EXISTS {table_name}"
     CURSER.execute(sql)
     sql = f"CREATE TABLE {table_name} ({table_schema})"
     CURSER.execute(sql)
-    CURSER.execute("SET FOREIGN_KEY_CHECKS = 1")
+    
 
 
 # def get_attribute_type_index(schema, attribute_type):
