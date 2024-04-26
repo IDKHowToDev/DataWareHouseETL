@@ -6,23 +6,44 @@ import glob
 import os 
 # EXTRACTION
 def extraction(csvfolder):
+    location=pd.DataFrame()
+    dates=pd.DataFrame()
+    weathers=pd.DataFrame()
     for filepath in csvfolder:
         df=pd.read_csv(filepath,sep=",", encoding='cp1252')
-        locationdf=df[['STATION', 'NAME', 'LATITUDE', 'LONGITUDE', 'ELEVATION']].drop_duplicates()
+        print("file= ",filepath)
+        locationdf=df[['STATION', 'NAME', 'LATITUDE', 'LONGITUDE', 'ELEVATION']]#.drop_duplicates()
         # locationdf.insert(0,'LocationID',range(0,0+len(locationdf)))
         weatherfact= df[['STATION', 'DATE', 'PRCP', 'PRCP_ATTRIBUTES', 'TAVG', 'TAVG_ATTRIBUTES','TMAX', 'TMAX_ATTRIBUTES', 'TMIN', 'TMIN_ATTRIBUTES']]
         datedf=df[['DATE']].drop_duplicates()
-        return locationdf,datedf,weatherfact
+        location=pd.concat([location, locationdf], ignore_index=True)
+        dates=pd.concat([dates, datedf], ignore_index=True)
+        weathers=pd.concat([weathers, weatherfact], ignore_index=True)
+        
+    return location,dates,weathers
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-algeria_folder = os.path.join(current_dir, '..', 'data/Algeria')
-morocco_folder = os.path.join(current_dir, '..', 'data/Morocco')
-tunisia_folder = os.path.join(current_dir, '..', 'data/Tunisia')
-csv_files1 = glob.glob(os.path.join(algeria_folder, '*.csv'))
-csv_files2 = glob.glob(os.path.join(morocco_folder, '*.csv'))
-csv_files3 = glob.glob(os.path.join(tunisia_folder, '*.csv'))
-
-
+#current_dir = os.path.dirname(os.path.abspath(__file__))
+#algeria_folder = os.path.join(current_dir, '..', 'data/Algeria')
+#morocco_folder = os.path.join(current_dir, '..', 'data/Morocco')
+#tunisia_folder = os.path.join(current_dir, '..', 'data/Tunisia')
+#csv_files1 = glob.glob(os.path.join(algeria_folder, '*.csv'))
+#csv_files2 = glob.glob(os.path.join(morocco_folder, '*.csv'))
+#csv_files3 = glob.glob(os.path.join(tunisia_folder, '*.csv'))
+csv_files1 = ["data/Algeria/Weather_1920-1929_ALGERIA.csv","data/Algeria/Weather_1930-1939_ALGERIA.csv",
+            "data/Algeria/Weather_1940-1949_ALGERIA.csv","data/Algeria/Weather_1950-1959_ALGERIA.csv",
+            "data/Algeria/Weather_1960-1969_ALGERIA.csv","data/Algeria/Weather_1970-1979_ALGERIA.csv",
+            "data/Algeria/Weather_1980-1989_ALGERIA.csv","data/Algeria/Weather_1990-1999_ALGERIA.csv",
+            "data/Algeria/Weather_2000-2009_ALGERIA.csv","data/Algeria/Weather_2010-2019_ALGERIA.csv","data/Algeria/Weather_2020-2022_ALGERIA.csv"]
+csv_files2 =[
+    "data/Tunisia/Weather_1920-1959_TUNISIA.csv",
+    "data/Tunisia/Weather_1960-1989_TUNISIA.csv",
+    "data/Tunisia/Weather_1990-2019_TUNISIA.csv",
+    "data/Tunisia/Weather_2020-2022_TUNISIA.csv",
+]
+csv_files3 = ["data/Morocco/Weather_1920-1959_MOROCCO.csv",
+            "data/Morocco/Weather_1960-1989_MOROCCO.csv",
+            "data/Morocco/Weather_1990-2019_MOROCCO.csv",
+            "data/Morocco/Weather_2020-2022_MOROCCO.csv"]
 
 
 
