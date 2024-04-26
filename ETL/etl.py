@@ -44,6 +44,7 @@ def traitment(df):
 
 alllocation=pd.concat([algerialocation,tunisialocation,moroccolocation])
 alldates=pd.concat([algeriadate,tunisiadate,moroccodate])
+alldates=alldates.drop_duplicates()
 allweathers=pd.concat([algeriaweather,tunisiaweather,moroccoweather])
 
 allweathers2=traitment(allweathers)
@@ -97,11 +98,31 @@ def creatDB(cursor):
     sql='CREATE DATABASE IF NOT EXISTS Weather_DataWarehouse'
     cursor.execute(sql)
     # cursor.close()
+def populate_location_table(co_cursor, df):
+    columns = ['STATION', 'NAME', 'LATITUDE', 'LONGITUDE', 'ELEVATION']
+    for _, row in df.iterrows():
+        placeholders = ','.join(['%s'] * len(columns))
+        sql = f"INSERT INTO Location ({','.join(columns)}) VALUES ({placeholders})"
+        co_cursor.execute(sql, tuple(row[columns]))
+
+def populate_date_table(co_cursor, df):
+    columns = ['DATE']
+    for _, row in df.iterrows():
+        sql = f"INSERT INTO Date ({','.join(columns)}) VALUES (%s)"
+        co_cursor.execute(sql, tuple(row[columns]))
+
+def populate_weather_fact_table(co_cursor, df):
+    columns = ['STATION', 'DATE', 'PRCP', 'PRCP_ATTRIBUTES', 'TAVG', 'TAVG_ATTRIBUTES', 
+               'TMAX', 'TMAX_ATTRIBUTES', 'TMIN', 'TMIN_ATTRIBUTES']
+    for _, row in df.iterrows():
+        placeholders = ','.join(['%s'] * len(columns))
+        sql = f"INSERT INTO WeatherFact ({','.join(columns)}) VALUES ({placeholders})"
+        co_cursor.execute(sql, tuple(row[columns]))
     
 connection = pymysql.connect(host='localhost',
                              user='root',
                              password='',
-                            #  database="Weather_DataWarehouse",
+                             database="Weather_DataWarehouse",
                             #  charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
 cursor = connection.cursor()
@@ -148,8 +169,15 @@ create_table(cursor, "WeatherFact", """
 print("Table WeatherFact created")
 
 
-
+# populate_location_table(co_cursor=cursor,df=alllocation)
+print("location has been set")
+# populate_date_table(co_cursor=cursor,df=alldates)
+print("date table has been created")
+print("data has been set succesfuly")
 # create_table(cursor, "Location", ",STATION CHAR(11) NOT NULL, NAME varchar(25), LATITUDE float, "
                                 #   "LONGITUDE float, ELEVATION float, PRIMARY KEY (STATION")
 
 # create_table(cursor,"")
+
+populate_weather_fact_table(co_cursor=cursor,df=allweathers2)
+print("the weather fact has been created succssfully")
