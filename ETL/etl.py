@@ -22,13 +22,7 @@ def extraction(csvfolder):
         
     return location,dates,weathers
 
-#current_dir = os.path.dirname(os.path.abspath(__file__))
-#algeria_folder = os.path.join(current_dir, '..', 'data/Algeria')
-#morocco_folder = os.path.join(current_dir, '..', 'data/Morocco')
-#tunisia_folder = os.path.join(current_dir, '..', 'data/Tunisia')
-#csv_files1 = glob.glob(os.path.join(algeria_folder, '*.csv'))
-#csv_files2 = glob.glob(os.path.join(morocco_folder, '*.csv'))
-#csv_files3 = glob.glob(os.path.join(tunisia_folder, '*.csv'))
+
 csv_files1 = ["data/Algeria/Weather_1920-1929_ALGERIA.csv","data/Algeria/Weather_1930-1939_ALGERIA.csv",
             "data/Algeria/Weather_1940-1949_ALGERIA.csv","data/Algeria/Weather_1950-1959_ALGERIA.csv",
             "data/Algeria/Weather_1960-1969_ALGERIA.csv","data/Algeria/Weather_1970-1979_ALGERIA.csv",
@@ -67,7 +61,7 @@ alllocation=pd.concat([algerialocation,tunisialocation,moroccolocation])
 alldates=pd.concat([algeriadate,tunisiadate,moroccodate])
 alldates=alldates.drop_duplicates()
 allweathers=pd.concat([algeriaweather,tunisiaweather,moroccoweather])
-
+alllocation=alllocation.drop_duplicates()
 allweathers2=traitment(allweathers)
 
 print("our fact table has been treatned")
@@ -83,38 +77,6 @@ def create_table(CURSER, table_name, table_schema):
     sql = f"CREATE TABLE {table_name} ({table_schema})"
     CURSER.execute(sql)
     
-
-
-# def get_attribute_type_index(schema, attribute_type):
-#     row_splt = ","
-#     ele_splt = " "
-
-#     # Create a schema matrix, where the first column stores the attribute's name and the second its type
-#     temp = schema.split(row_splt)
-#     # Using list comprehension as shorthand
-#     schema_matrix = [ele.split(ele_splt) for ele in temp]
-
-#     # Get attributes' types list from schema_matrix
-#     attributes_types = np.array(schema_matrix)[:, 1]
-
-#     # Get all the indices of attributes of type 'attribute_type'
-#     indices = [i for i, e in enumerate(attributes_types) if e.lower() == attribute_type.lower()]
-#     return indices
-    
-# def populate_table(co_cursor, csv_path, table_name, attributes):
-#     date_indices = get_attribute_type_index(attributes, 'DATE')
-#     data = pd.read_csv(csv_path, sep=",", encoding='cp1252') 
-    
-#     for index, row in data.iterrows():
-#         attribute_number = (row.size * '%s,')[:-1]
-#         sql = "INSERT INTO " + table_name + " VALUES (" + attribute_number + ")"
-
-#         # convert DATE attributes to MySQL format
-#         if date_indices:
-#             for date_index in date_indices:
-#                 row[date_index] = datetime.strptime(row[date_index], '%Y/%m/%d').date()
-
-#         co_cursor.execute(sql, tuple(row))
 def creatDB(cursor):
     sql='CREATE DATABASE IF NOT EXISTS Weather_DataWarehouse'
     cursor.execute(sql)
@@ -190,15 +152,11 @@ create_table(cursor, "WeatherFact", """
 print("Table WeatherFact created")
 
 
-# populate_location_table(co_cursor=cursor,df=alllocation)
+populate_location_table(co_cursor=cursor,df=alllocation)
 print("location has been set")
-# populate_date_table(co_cursor=cursor,df=alldates)
+populate_date_table(co_cursor=cursor,df=alldates)
 print("date table has been created")
 print("data has been set succesfuly")
-# create_table(cursor, "Location", ",STATION CHAR(11) NOT NULL, NAME varchar(25), LATITUDE float, "
-                                #   "LONGITUDE float, ELEVATION float, PRIMARY KEY (STATION")
-
-# create_table(cursor,"")
 
 populate_weather_fact_table(co_cursor=cursor,df=allweathers2)
 print("the weather fact has been created succssfully")
