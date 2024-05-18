@@ -2,17 +2,12 @@ import dash
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
-import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import os 
-import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output
 import dash_daq as daq
 import pandas as pd
 import plotly.express as px
-import os
 
 
 df_weather = pd.read_csv(os.path.join(os.getcwd(),'.','weatherfact.csv' ))
@@ -35,9 +30,17 @@ df['Year'] = df['DATE'].dt.year
 df['Season'] = df['DATE'].dt.month % 12 // 3 + 1
 df['Quarter'] = df['DATE'].dt.quarter
 df['Month'] = df['DATE'].dt.month
+
 months=["Janvier","Fevrier","Mars","Avril", "Mai","Juin","Juillet","Aout","Septembre","Octobre", "Novembre","Decembre"]
 years = sorted(df['Year'].unique())
 saisons=["Hiver","Printemps","Eté","Automne"]
+dropdown_map={
+    'TAVG':"Température moyenne",
+    'TMAX':"Température maximale",
+    'TMIN':"Température minimale"
+}
+z_options = list(dropdown_map.keys())
+print(years)
 slider_year = []
 for year in years:
     step = {'label': str(year), 'method': 'update', 'args': [{'visible': [True, True]}]}
@@ -118,21 +121,32 @@ app.layout = html.Div(
     ], 
     className='dropdown-container'),
     dcc.Graph(id='weather-graph'),
-    html.Div(id="slider", 
+    html.Div(id="div-map",
         children=[
-        html.Label("Année",id="label-slider"),
-        dcc.Slider(
-            id='year-slider',
-            min=min(years),
-            max=max(years),
-            #marks={i: years[i] for i in years},
-            value=min(years),
-            step=2,
-            tooltip={"placement":"bottom","always_visible":True},
-            
-        ),
+        html.Div(
+            id="slider", 
+            children=[
+            html.Label("Séléctionnez une année", id="label-slider", className="label-dropdown"),
+            dcc.Slider(
+                id='year-slider',
+                min=min(years),
+                max=max(years),
+                marks={str(i): str(i) for i in years if i % 10==0},
+                value=min(years),
+                step=1,
+                tooltip={"placement":"bottom","always_visible":True},    
+            ),
+        ]),
+        html.Div(id="attribute-map-div",
+            children=[
+            html.Label("Sélectionnez un attribut", className="label-dropdown"),
+            dcc.Dropdown(
+                id='z-value-dropdown',
+                options=[{'label': dropdown_map[col], 'value': col} for col in z_options],
+                value='TMAX'  # Default value
+            )
+        ],),
     ]),
-    
     dcc.Graph(id='map-graph'),
     
 ])
@@ -194,7 +208,11 @@ def update_graph(selected_station, year, season, quarter, month, toggle):
             ],
             layout=go.Layout(
 
-                title=f'Données météorologiques pour la station {station_name_to_id[selected_station]}',
+                title={
+                    'text':f'Données météorologiques pour la station {station_name_to_id[selected_station]}',
+                    'xanchor': 'center',
+                    'x': 0.5,
+                },
                 xaxis={'title': 'Date'},
                 yaxis={'title': 'Precipitation'},
             )
@@ -211,9 +229,14 @@ def update_graph(selected_station, year, season, quarter, month, toggle):
                 )
             ],
             layout=go.Layout(
-                title=f'Données météorologiques pour la station {station_name_to_id[selected_station]}',
+                title={
+                    'text':f'Données météorologiques pour la station {station_name_to_id[selected_station]}',
+                    'xanchor': 'center',
+                    'x': 0.5,
+                },
                 xaxis={'title': 'Date'},
                 yaxis={'title': 'Precipitation'},
+                
             )
         )
 
@@ -224,9 +247,10 @@ def update_graph(selected_station, year, season, quarter, month, toggle):
     [Input('year-slider', 'value'),
      Input('season-dropdown', 'value'),
      Input('quarter-dropdown', 'value'),
-     Input('month-dropdown', 'value')]
+     Input('month-dropdown', 'value'),
+     Input('z-value-dropdown', 'value')]
 )
-def update_map(selected_year, selected_season, selected_quarter, selected_month):
+def update_map(selected_year, selected_season, selected_quarter, selected_month,z_value):
     filtered_df = df[(df['Year'] == selected_year) &
                      (df['Season'] == selected_season) &
                      (df['Quarter'] == selected_quarter) &
@@ -235,7 +259,7 @@ def update_map(selected_year, selected_season, selected_quarter, selected_month)
     # fig = px.scatter_mapbox(filtered_df, lat='LATITUDE', lon='LONGITUDE', hover_name='NAME',
     #                         hover_data=['PRCP', 'TAVG', 'TMAX', 'TMIN'], color='TMAX',
     #                         color_continuous_scale='Viridis', zoom=4, height=600)
-    fig = px.density_mapbox(filtered_df, lat='LATITUDE', lon='LONGITUDE', z='TMAX',
+    fig = px.density_mapbox(filtered_df, lat='LATITUDE', lon='LONGITUDE', z=z_value,
                         radius=10,  # Ajustez le rayon pour le lissage de densité
                         center={'lat': filtered_df['LATITUDE'].mean(), 'lon': filtered_df['LONGITUDE'].mean()},
                         zoom=4,  # Ajustez le niveau de zoom
