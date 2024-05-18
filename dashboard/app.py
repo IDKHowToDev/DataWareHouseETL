@@ -44,7 +44,7 @@ for year in years:
     slider_year.append(step)
 # Initialisation de l'application Dash
 app = dash.Dash(__name__)
-
+server=app.server
 # Configuration de la mise en page de l'application
 app.layout = html.Div(
     id="global",
