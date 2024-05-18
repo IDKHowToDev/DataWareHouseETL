@@ -105,7 +105,7 @@ def populate_weather_fact_table(co_cursor, df):
 connection = pymysql.connect(host='localhost',
                              user='root',
                              password='',
-                             database="Weather_DataWarehouse",
+                            #  database="Weather_DataWarehouse",
                             #  charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
 cursor = connection.cursor()
@@ -151,6 +151,24 @@ create_table(cursor, "WeatherFact", """
 """)
 print("Table WeatherFact created")
 
+#### Create Date Algeria  
+create_table(cursor, "Algeria", """
+    STATION VARCHAR(255),
+    NAME VARCHAR(255), 
+    LATITUDE DOUBLE,
+    LONGITUDE DOUBLE, 
+    ELEVATION DOUBLE, 
+    DATE DATE, 
+    PRCP DOUBLE, 
+    PRCP_ATTRIBUTES VARCHAR(255),     
+    TAVG DOUBLE, 
+    TAVG_ATTRIBUTES VARCHAR(255), 
+    TMAX DOUBLE, 
+    TMAX_ATTRIBUTES VARCHAR(255),   
+    TMIN DOUBLE, 
+    TMIN_ATTRIBUTES VARCHAR(255) 
+""")
+print("Table Algeria created")
 
 populate_location_table(co_cursor=cursor,df=alllocation)
 print("location has been set")
