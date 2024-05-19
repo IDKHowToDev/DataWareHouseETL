@@ -123,8 +123,13 @@ h1 {
     border-radius: 15px;
     border-color: #ecbd84;
     background-color: #ecbd84;
-    
+    font-family: 'Segoe UI', sans-serif;
 }
 #attribute-map-div{
     padding: 0px 10px 15px 15px;
+}
+#z-value-dropdown{
+    height: 50px;
+    line-height: 50px;
+    width: 33%;
 }

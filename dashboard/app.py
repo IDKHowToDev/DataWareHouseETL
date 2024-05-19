@@ -31,20 +31,53 @@ df['Season'] = df['DATE'].dt.month % 12 // 3 + 1
 df['Quarter'] = df['DATE'].dt.quarter
 df['Month'] = df['DATE'].dt.month
 
+# Les valeurs des dropdowns à afficher
 months=["Janvier","Fevrier","Mars","Avril", "Mai","Juin","Juillet","Aout","Septembre","Octobre", "Novembre","Decembre"]
 years = sorted(df['Year'].unique())
 saisons=["Hiver","Printemps","Eté","Automne"]
 dropdown_map={
     'TAVG':"Température moyenne",
     'TMAX':"Température maximale",
-    'TMIN':"Température minimale"
+    'TMIN':"Température minimale",
+    #'SNWD':"Épaisseur de la neige",
+    #'SNOW':"Chute de neige",
+
 }
 z_options = list(dropdown_map.keys())
-print(years)
-slider_year = []
-for year in years:
-    step = {'label': str(year), 'method': 'update', 'args': [{'visible': [True, True]}]}
-    slider_year.append(step)
+# get country icons
+def get_station_icon(station_name):
+    if 'AG' in station_name:
+        return 'dz.png'
+    elif 'TS' in station_name:
+        return 'tn.png'
+    elif 'MO' in station_name:
+        return 'mr.png'
+    else:
+        return None
+
+# Create dropdown options with icons
+dropdown_options_station = []
+for station in df['STATION'].unique():
+    icon = get_station_icon(station)
+    if icon:
+        option_label = html.Span([
+            html.Img(src=f'/assets/icons/{icon}', style={'height': '20px', 'margin-right': '10px', 'vertical-align': 'middle','margin-bottom':'3px'}),
+            station_name_to_id[station]
+        ])
+    else:
+        option_label = station
+    dropdown_options_station.append({'label': option_label, 'value': station})
+
+dropdown_options_attr = []
+for z_option in z_options:
+    icon = f"{z_option.lower()}.png"
+    option_label = html.Span(
+    style={'display': 'flex', 'align-items': 'center','margin-top':'5px'},
+    children=[
+        html.Img(src=f'/assets/icons/{icon}', style={'height': '40px', 'margin-right': '10px', 'vertical-align': 'middle'}),
+        dropdown_map[z_option]
+    ])
+    dropdown_options_attr.append({'label': option_label, 'value': z_option})
 # Initialisation de l'application Dash
 app = dash.Dash(__name__)
 
@@ -55,7 +88,7 @@ app.layout = html.Div(
     html.Div(
         className="header",
         children=[
-            html.Img(src='/assets/logo.png', id="logo"),
+            html.Img(src='/assets/icons/logo.png', id="logo"),
             html.H1('Weather Dashboard'),
         ]
     ),
@@ -64,8 +97,9 @@ app.layout = html.Div(
         children=[
             html.Label('Station', className="label-dropdown"),
             dcc.Dropdown(
+                optionHeight=40,
                 id='station-dropdown',
-                options=[{'label': station_name_to_id[station], 'value': station} for station in df['STATION'].unique()],
+                options=dropdown_options_station, #[{'label': station_name_to_id[station], 'value': station} for station in df['STATION'].unique()],
                 value=df['STATION'].unique()[0],
                 placeholder="Nom de la station"
             ), 
@@ -141,9 +175,12 @@ app.layout = html.Div(
             children=[
             html.Label("Sélectionnez un attribut", className="label-dropdown"),
             dcc.Dropdown(
+                # TO DO Ajout icones à coté des options
+                optionHeight=50,
+                searchable=False,
                 id='z-value-dropdown',
-                options=[{'label': dropdown_map[col], 'value': col} for col in z_options],
-                value='TMAX'  # Default value
+                options=dropdown_options_attr,#[{'label': dropdown_map[col], 'value': col} for col in z_options],
+                value='TAVG'  # Default value
             )
         ],),
     ]),
@@ -259,12 +296,29 @@ def update_map(selected_year, selected_season, selected_quarter, selected_month,
     # fig = px.scatter_mapbox(filtered_df, lat='LATITUDE', lon='LONGITUDE', hover_name='NAME',
     #                         hover_data=['PRCP', 'TAVG', 'TMAX', 'TMIN'], color='TMAX',
     #                         color_continuous_scale='Viridis', zoom=4, height=600)
+    match z_value:
+        case 'TMAX':
+            color='OrRd'
+        case 'TMIN':
+            color="Blues"
+        case 'TAVG':
+            color=[[0, '#589e57'], [0.5, '#406f49'], [1, '#344a35']]
+        case _:
+            color="Viridis"
+    colors=[
+        [0, '#440154'],  # Viridis start
+        [0.1, '#440154'],
+        [0.25, 'red'],   # Custom color start
+        [0.5, 'red'],    # Custom color end
+        [0.75, '#21908C'],  # Viridis continues
+        [1, '#FDE725']
+    ]
     fig = px.density_mapbox(filtered_df, lat='LATITUDE', lon='LONGITUDE', z=z_value,
                         radius=10,  # Ajustez le rayon pour le lissage de densité
                         center={'lat': filtered_df['LATITUDE'].mean(), 'lon': filtered_df['LONGITUDE'].mean()},
                         zoom=4,  # Ajustez le niveau de zoom
                         mapbox_style='carto-positron',  # Choisissez un style de carte Mapbox
-                        color_continuous_scale='OrRd',  # Choisissez l'échelle de couleurs, ici 'OrRd' (orange-rouge)
+                        color_continuous_scale=color,  # Choisissez l'échelle de couleurs, ici 'OrRd' (orange-rouge)
                         )
     fig.update_layout(mapbox_style='open-street-map')
     fig.update_layout(
