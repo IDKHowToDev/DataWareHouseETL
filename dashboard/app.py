@@ -39,8 +39,13 @@ dropdown_map={
     'TAVG':"Température moyenne",
     'TMAX':"Température maximale",
     'TMIN':"Température minimale",
+    #TO DO Attribute to add 
+    #'PRCP':"Précipitation",
     #'SNWD':"Épaisseur de la neige",
     #'SNOW':"Chute de neige",
+    #'WSFG':"Vitesse maximale du vent en rafale",
+    # hada n9dro mandirohch
+    #'PGTM':"Heure de pointe des rafales",
 
 }
 z_options = list(dropdown_map.keys())
