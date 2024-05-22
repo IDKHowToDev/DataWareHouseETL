@@ -2,7 +2,6 @@ import numpy as np
 import pymysql
 import pandas as pd
 from datetime import datetime
-import glob 
 import os 
 # EXTRACTION
 def extraction(csvfolder):
@@ -14,7 +13,11 @@ def extraction(csvfolder):
         print("file= ",filepath)
         locationdf=df[['STATION', 'NAME', 'LATITUDE', 'LONGITUDE', 'ELEVATION']]#.drop_duplicates()
         # locationdf.insert(0,'LocationID',range(0,0+len(locationdf)))
-        weatherfact= df[['STATION', 'DATE', 'PRCP', 'PRCP_ATTRIBUTES', 'TAVG', 'TAVG_ATTRIBUTES','TMAX', 'TMAX_ATTRIBUTES', 'TMIN', 'TMIN_ATTRIBUTES']]
+        if 'SNWD' not in df.columns:
+            df['SNWD'] = 0
+        if 'WSFG' not in df.columns:
+            df['WSFG'] = 0
+        weatherfact= df[['STATION', 'DATE', 'PRCP', 'TAVG', 'TMAX', 'TMIN', 'SNWD','WSFG']]
         datedf=df[['DATE']].drop_duplicates()
         location=pd.concat([location, locationdf], ignore_index=True)
         dates=pd.concat([dates, datedf], ignore_index=True)
@@ -133,36 +136,30 @@ def populate_date_table(co_cursor, df):
         co_cursor.execute(sql, tuple(row[columns]))
 
 def populate_weather_fact_table(co_cursor, df):
-    columns = ['STATION', 'DATE', 'PRCP', 'PRCP_ATTRIBUTES', 'TAVG', 'TAVG_ATTRIBUTES', 
-               'TMAX', 'TMAX_ATTRIBUTES', 'TMIN', 'TMIN_ATTRIBUTES']
+    columns = ['STATION', 'DATE', 'PRCP', 'TAVG', 
+               'TMAX', 'TMIN', 'SNWD','WSFG']
     for _, row in df.iterrows():
         placeholders = ','.join(['%s'] * len(columns))
         sql = f"INSERT INTO WeatherFact ({','.join(columns)}) VALUES ({placeholders})"
         co_cursor.execute(sql, tuple(row[columns]))
     
 connection = pymysql.connect(host='localhost',
-                             user='root',
-                             password='',
-                            #  database="Weather_DataWarehouse",
+                            user='root',
+                            password='',
+                            database="Weather_DataWarehouse",
                             #  charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
+                            cursorclass=pymysql.cursors.DictCursor)
 cursor = connection.cursor()
 
 creatDB(cursor)
-table_schema = """
+table_schema_location = """
     STATION VARCHAR(50) PRIMARY KEY,
     NAME VARCHAR(255),
     LATITUDE FLOAT,
     LONGITUDE FLOAT,
     ELEVATION FLOAT
 """
-create_table(cursor, "Location",table_schema = """
-    STATION VARCHAR(50) PRIMARY KEY,
-    NAME VARCHAR(255),
-    LATITUDE FLOAT,
-    LONGITUDE FLOAT,
-    ELEVATION FLOAT
-""")
+create_table(cursor, "Location",table_schema_location)
 print("Table Location created")
 
 #### Create Date Table  
@@ -176,13 +173,11 @@ create_table(cursor, "WeatherFact", """
     STATION VARCHAR(50),
     DATE DATE,
     PRCP FLOAT,
-    PRCP_ATTRIBUTES VARCHAR(10),
     TAVG FLOAT,
-    TAVG_ATTRIBUTES VARCHAR(10), 
     TMAX FLOAT,
-    TMAX_ATTRIBUTES VARCHAR(10),
     TMIN FLOAT,
-    TMIN_ATTRIBUTES VARCHAR(10),
+    SNWD FLOAT,
+    WSFG FLOAT,
     PRIMARY KEY (STATION, DATE),
     FOREIGN KEY (STATION) REFERENCES Location(STATION),
     FOREIGN KEY (DATE) REFERENCES Date(DATE)
@@ -190,23 +185,19 @@ create_table(cursor, "WeatherFact", """
 print("Table WeatherFact created")
 
 #### Create Date Algeria  
-create_table(cursor, "Algeria", """
-    STATION VARCHAR(255),
-    NAME VARCHAR(255), 
-    LATITUDE DOUBLE,
-    LONGITUDE DOUBLE, 
-    ELEVATION DOUBLE, 
-    DATE DATE, 
-    PRCP DOUBLE, 
-    PRCP_ATTRIBUTES VARCHAR(255),     
-    TAVG DOUBLE, 
-    TAVG_ATTRIBUTES VARCHAR(255), 
-    TMAX DOUBLE, 
-    TMAX_ATTRIBUTES VARCHAR(255),   
-    TMIN DOUBLE, 
-    TMIN_ATTRIBUTES VARCHAR(255) 
-""")
-print("Table Algeria created")
+#create_table(cursor, "Algeria", """
+#    STATION VARCHAR(255),
+#    NAME VARCHAR(255), 
+#    LATITUDE DOUBLE,
+#    LONGITUDE DOUBLE, 
+#    ELEVATION DOUBLE, 
+#    DATE DATE, 
+#    PRCP DOUBLE,    
+#    TAVG DOUBLE, 
+#    TMAX DOUBLE,    
+#    TMIN DOUBLE, 
+#""")
+#print("Table Algeria created")
 
 # populate_location_table(co_cursor=cursor,df=alllocation)
 print("location has been set")

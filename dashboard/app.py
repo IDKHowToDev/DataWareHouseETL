@@ -10,7 +10,7 @@ import pandas as pd
 import plotly.express as px
 
 
-df_weather = pd.read_csv(os.path.join(os.getcwd(),'.','weatherfact.csv' ))
+df_weather = pd.read_csv(os.path.join(os.getcwd(),'.','weatherfact2.csv' ))
 
 # Load the location data CSV file into a pandas DataFrame
 df_location = pd.read_csv(os.path.join(os.getcwd(),'.','location.csv' ))
@@ -39,15 +39,12 @@ dropdown_map={
     'TAVG':"Température moyenne",
     'TMAX':"Température maximale",
     'TMIN':"Température minimale",
-    #TO DO Attribute to add 
-    #'PRCP':"Précipitation",
-    #'SNWD':"Épaisseur de la neige",
-    #'SNOW':"Chute de neige",
-    #'WSFG':"Vitesse maximale du vent en rafale",
-    # hada n9dro mandirohch
-    #'PGTM':"Heure de pointe des rafales",
+    'PRCP':"Précipitation",
+    'SNWD':"Épaisseur de la neige",
+    'WSFG':"Vitesse maximale du vent en rafale",
 
 }
+
 z_options = list(dropdown_map.keys())
 # get country icons
 def get_station_icon(station_name):
@@ -73,13 +70,14 @@ for station in df['STATION'].unique():
         option_label = station
     dropdown_options_station.append({'label': option_label, 'value': station})
 
+# Create dropdown Attribute with icons
 dropdown_options_attr = []
 for z_option in z_options:
     icon = f"{z_option.lower()}.png"
     option_label = html.Span(
-    style={'display': 'flex', 'align-items': 'center','margin-top':'5px'},
+    style={'display': 'flex', 'align-items': 'center','margin-top':'7px'},
     children=[
-        html.Img(src=f'/assets/icons/{icon}', style={'height': '40px', 'margin-right': '10px', 'vertical-align': 'middle'}),
+        html.Img(src=f'/assets/icons/{icon}', style={'height': '30px', 'margin-right': '10px', 'vertical-align': 'middle'}),
         dropdown_map[z_option]
     ])
     dropdown_options_attr.append({'label': option_label, 'value': z_option})
@@ -308,6 +306,12 @@ def update_map(selected_year, selected_season, selected_quarter, selected_month,
             color="Blues"
         case 'TAVG':
             color=[[0, '#589e57'], [0.5, '#406f49'], [1, '#344a35']]
+        case 'PRCP':
+            color=[[0, '#2596be'], [0.5, '#165a72'], [1, '#0b2d39']]
+        case 'SNWD':
+            color="mint"
+        case 'WSFG':
+            color=[[0,'#acd3e0'],[0.5,'#8dc4dc'],[1, '#a6daff']]
         case _:
             color="Viridis"
     colors=[
@@ -324,6 +328,9 @@ def update_map(selected_year, selected_season, selected_quarter, selected_month,
                         zoom=4,  # Ajustez le niveau de zoom
                         mapbox_style='carto-positron',  # Choisissez un style de carte Mapbox
                         color_continuous_scale=color,  # Choisissez l'échelle de couleurs, ici 'OrRd' (orange-rouge)
+                        range_color=(filtered_df[z_value].min(),filtered_df[z_value].max()),
+                        hover_data=["STATION"],
+                        
                         )
     fig.update_layout(mapbox_style='open-street-map')
     fig.update_layout(
@@ -331,9 +338,10 @@ def update_map(selected_year, selected_season, selected_quarter, selected_month,
             #lon = 3 c'est mieux
             'center': {'lat': 30, 'lon': 0},
             'zoom': 4
-        }
+        },
+        hoverlabel=dict(bgcolor="white",font_size=13, font_family="Segoe UI"),
     )
-    
+    fig.update_traces(customdata=[[station_name_to_id.get(station_id, "Unknown")] for station_id in filtered_df['STATION']])
     fig.update_layout(margin={'r': 0, 't': 0, 'l': 0, 'b': 0})
     return fig
 
