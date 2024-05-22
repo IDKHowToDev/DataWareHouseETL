@@ -73,11 +73,23 @@ h1 {
     height: 400px;
     /*margin-bottom: 20px;*/
     padding: 0 120 0 120;
+    border: 1px solid;
+    border-radius: 15px;
+    border-color: white;
+    background-color: #ecbd84;
+    overflow: hidden;
+    
 }
 
 #map-graph {
     height: 600px;
     width: 90%;
+    border: 1px solid;
+    border-radius: 15px;
+    border-color: #ecbd84;
+    background-color: #ecbd84;
+    overflow: hidden;
+   
 }
 
 #weather-graph, #map-graph {
@@ -90,7 +102,10 @@ h1 {
 }
 
 #slider{
-    margin: 20px 0 20px 0;
+    
+    margin-bottom: 10px;
+    overflow: hidden;
+    padding: 15px 0 10px 0;
 }
 #label-slider{
     margin-left: 20px;
@@ -101,4 +116,20 @@ h1 {
     font-family: 'Segoe UI', sans-serif;
     font-style: italic;
     font-size: large;
+}
+#div-map{
+    margin: 20px 0 20px 0;
+    border: 1px solid;
+    border-radius: 15px;
+    border-color: #ecbd84;
+    background-color: #ecbd84;
+    font-family: 'Segoe UI', sans-serif;
+}
+#attribute-map-div{
+    padding: 0px 10px 15px 15px;
+}
+#z-value-dropdown{
+    height: 50px;
+    line-height: 50px;
+    width: 33%;
 }
