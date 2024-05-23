@@ -265,7 +265,11 @@ def update_weather_graph(selected_station,year_slider):
 
     # Update layout
     fig.update_layout(
-        title=f'Données météorologiques pour la station {station_name_to_id[selected_station]}',
+        title={
+            'text':f'Données météorologiques pour la station {station_name_to_id[selected_station]}',
+            'xanchor': 'center',
+            'x': 0.5,
+        },
         xaxis_title='Date',
         yaxis_title='Valeur',
         hovermode='x',  # ensures hover information appears on all traces at the same x value
