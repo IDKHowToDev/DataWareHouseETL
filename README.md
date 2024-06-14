@@ -19,7 +19,7 @@ Ce dossier contient les fichiers nécessaires pour exécuter le tableau de bord 
 
 1. Cloner le dépôt :
     ```bash
-    git clone <url_du_dépôt>
+    git clone https://github.com/IDKHowToDev/DataWareHouseETL.git
     ```
 2. Installer les dépendances :
     ```bash
